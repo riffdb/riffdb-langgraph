@@ -1,0 +1,43 @@
+query GetCheckpointById(
+    $scope: Checkpoint.scope,
+    $thread_id: Checkpoint.thread_id,
+    $checkpoint_ns: Checkpoint.checkpoint_ns,
+    $checkpoint_id: Checkpoint.checkpoint_id,
+) {
+    maybe checkpoint from Checkpoint
+        where scope == $scope
+          && thread_id == $thread_id
+          && checkpoint_ns == $checkpoint_ns
+          && checkpoint_id == $checkpoint_id
+
+    many writes from CheckpointWrite
+        where scope == $scope
+          && thread_id == $thread_id
+          && checkpoint_ns == $checkpoint_ns
+          && checkpoint_id == $checkpoint_id
+        order by task_id asc, write_idx asc
+        take 48
+
+    return Found {
+        checkpoint: checkpoint {
+            thread_id
+            checkpoint_ns
+            checkpoint_id
+            parent_checkpoint_id
+            checkpoint_serde_type
+            checkpoint_payload
+            metadata_serde_type
+            metadata_payload
+            revision
+        }
+        writes: writes {
+            task_id
+            write_idx
+            channel
+            serde_type
+            payload
+            task_path
+        }
+    }
+    outcomes Found
+}

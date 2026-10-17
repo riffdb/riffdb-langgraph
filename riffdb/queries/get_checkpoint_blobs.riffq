@@ -1,0 +1,25 @@
+query GetCheckpointBlobs(
+    $scope: CheckpointBlob.scope,
+    $thread_id: CheckpointBlob.thread_id,
+    $checkpoint_ns: CheckpointBlob.checkpoint_ns,
+    $blob_keys: Set<CheckpointBlob.blob_key>,
+) {
+    many blobs from CheckpointBlob
+        where scope == $scope
+          && thread_id == $thread_id
+          && checkpoint_ns == $checkpoint_ns
+          && blob_key in $blob_keys
+        order by blob_key asc
+        take 12
+
+    return Found {
+        blobs: blobs {
+            blob_key
+            channel
+            blob_version
+            serde_type
+            payload
+        }
+    }
+    outcomes Found
+}

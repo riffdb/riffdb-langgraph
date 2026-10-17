@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "riffdb-langgraph"
+version = "0.1.0.dev1"
+description = "Compiled RiffDB checkpoint-saver adapter for LangGraph"
+readme = "README.md"
+requires-python = ">=3.13"
+license = { text = "MIT OR Apache-2.0" }
+authors = [{ name = "RiffDB contributors" }]
+dependencies = [
+  "langgraph-checkpoint>=3.0.0",
+  "riffdb==0.1.0.dev19",
+]
+
+[dependency-groups]
+dev = [
+  "langgraph>=1.0.0",
+  "langgraph-checkpoint-conformance",
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<9",
+  "pytest-asyncio>=1.0",
+  "ruff>=0.12,<0.13",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/riffdb_langgraph"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["src/riffdb_langgraph/generated/client.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+packages = ["riffdb_langgraph"]
+exclude = ["src/riffdb_langgraph/generated/client.py"]
+
+[[tool.mypy.overrides]]
+module = [
+  "langgraph.*",
+  "langgraph_checkpoint_conformance.*",
+]
+ignore_missing_imports = true

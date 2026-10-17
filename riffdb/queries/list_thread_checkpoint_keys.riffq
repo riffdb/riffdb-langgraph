@@ -1,0 +1,21 @@
+query ListThreadCheckpointKeys(
+    $scope: Checkpoint.scope,
+    $thread_id: Checkpoint.thread_id,
+    $limit: Limit<256> = 256,
+    $after: Cursor?,
+) {
+    many checkpoints from Checkpoint
+        where scope == $scope
+          && thread_id == $thread_id
+        order by checkpoint_ns asc, checkpoint_id asc
+        take $limit after $after
+
+    return Found {
+        checkpoints: checkpoints {
+            thread_id
+            checkpoint_ns
+            checkpoint_id
+        }
+    }
+    outcomes Found
+}

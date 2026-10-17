@@ -1,0 +1,71 @@
+{
+  "schema": "riffdb.application-source/v7",
+  "application": "riffdb-langgraph",
+  "contract": {
+    "source": "riffdb/contract.riff",
+    "lineage": "RiffDBLangGraph",
+    "version": 1
+  },
+  "generation": {
+    "python": "src/riffdb_langgraph/generated/client.py"
+  },
+  "migrations": [],
+  "query_modules": [
+    {
+      "name": "riffdb_langgraph",
+      "version": 1,
+      "queries": [
+        { "name": "GetCheckpointBlobs", "source": "riffdb/queries/get_checkpoint_blobs.riffq" },
+        { "name": "GetCheckpointById", "source": "riffdb/queries/get_checkpoint_by_id.riffq" },
+        { "name": "GetLatestCheckpoint", "source": "riffdb/queries/get_latest_checkpoint.riffq" },
+        { "name": "GetParentPendingSends", "source": "riffdb/queries/get_parent_pending_sends.riffq" },
+        { "name": "ListCheckpointsByScope", "source": "riffdb/queries/list_checkpoints_by_scope.riffq" },
+        { "name": "ListCheckpointsByScopeBefore", "source": "riffdb/queries/list_checkpoints_by_scope_before.riffq" },
+        { "name": "ListCheckpointsByThread", "source": "riffdb/queries/list_checkpoints_by_thread.riffq" },
+        { "name": "ListCheckpointsByThreadBefore", "source": "riffdb/queries/list_checkpoints_by_thread_before.riffq" },
+        { "name": "ListCheckpointsByThreadNs", "source": "riffdb/queries/list_checkpoints_by_thread_ns.riffq" },
+        { "name": "ListCheckpointsByThreadNsBefore", "source": "riffdb/queries/list_checkpoints_by_thread_ns_before.riffq" },
+        { "name": "ListThreadBlobKeys", "source": "riffdb/queries/list_thread_blob_keys.riffq" },
+        { "name": "ListThreadCheckpointKeys", "source": "riffdb/queries/list_thread_checkpoint_keys.riffq" },
+        { "name": "ListThreadWriteKeys", "source": "riffdb/queries/list_thread_write_keys.riffq" }
+      ]
+    }
+  ],
+  "reactive_modules": [],
+  "roles": [
+    {
+      "name": "LangGraphCheckpointer",
+      "environment": "development",
+      "tenant_scope": "global",
+      "queries": [
+        "GetCheckpointBlobs",
+        "GetCheckpointById",
+        "GetLatestCheckpoint",
+        "GetParentPendingSends",
+        "ListCheckpointsByScope",
+        "ListCheckpointsByScopeBefore",
+        "ListCheckpointsByThread",
+        "ListCheckpointsByThreadBefore",
+        "ListCheckpointsByThreadNs",
+        "ListCheckpointsByThreadNsBefore",
+        "ListThreadBlobKeys",
+        "ListThreadCheckpointKeys",
+        "ListThreadWriteKeys"
+      ],
+      "commands": [
+        "DeleteCheckpointBlobs",
+        "DeleteCheckpoints",
+        "DeleteCheckpointWrites",
+        "PutCheckpoint",
+        "PutCheckpointBlobs",
+        "PutCheckpointWithBlobs",
+        "PutCheckpointWrites"
+      ],
+      "event_streams": [],
+      "watch_queries": [],
+      "agent_subscriptions": [],
+      "row_policies": []
+    }
+  ],
+  "seed_inputs": []
+}

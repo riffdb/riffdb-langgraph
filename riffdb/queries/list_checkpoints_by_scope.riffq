@@ -1,0 +1,42 @@
+query ListCheckpointsByScope(
+    $scope: Checkpoint.scope,
+    $limit: Limit<4> = 4,
+    $after: Cursor?,
+) {
+    many checkpoints from Checkpoint
+        where scope == $scope
+        order by checkpoint_id desc, thread_id desc, checkpoint_ns desc
+        take $limit after $after
+
+    many writes from CheckpointWrite
+        for each cp in checkpoints
+        where scope == $scope
+          && thread_id == cp.thread_id
+          && checkpoint_ns == cp.checkpoint_ns
+          && checkpoint_id == cp.checkpoint_id
+        order by task_id asc, write_idx asc
+        take 8 per cp
+
+    return Found {
+        checkpoints: checkpoints {
+            thread_id
+            checkpoint_ns
+            checkpoint_id
+            parent_checkpoint_id
+            checkpoint_serde_type
+            checkpoint_payload
+            metadata_serde_type
+            metadata_payload
+            revision
+            writes: writes {
+                task_id
+                write_idx
+                channel
+                serde_type
+                payload
+                task_path
+            }
+        }
+    }
+    outcomes Found
+}

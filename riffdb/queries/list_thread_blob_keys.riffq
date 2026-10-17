@@ -1,0 +1,22 @@
+query ListThreadBlobKeys(
+    $scope: CheckpointBlob.scope,
+    $thread_id: CheckpointBlob.thread_id,
+    $limit: Limit<256> = 256,
+    $after: Cursor?,
+) {
+    many blobs from CheckpointBlob
+        where scope == $scope
+          && thread_id == $thread_id
+        order by checkpoint_ns asc, checkpoint_id asc, blob_key asc
+        take $limit after $after
+
+    return Found {
+        blobs: blobs {
+            thread_id
+            checkpoint_ns
+            checkpoint_id
+            blob_key
+        }
+    }
+    outcomes Found
+}

@@ -1,0 +1,300 @@
+contract RiffDBLangGraph version 1 {
+  entity Checkpoint {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>
+    )
+    field parent_checkpoint_id: optional<string<128>>
+    field checkpoint_serde_type: string<64>
+    field checkpoint_payload: bytes<262144>
+    field metadata_serde_type: string<64>
+    field metadata_payload: bytes<65536>
+    field revision: u64
+    index by_thread_ns (scope, thread_id, checkpoint_ns, checkpoint_id)
+      text_key(checkpoint_id, binary_utf8_v1)
+    index by_thread (scope, thread_id, checkpoint_id, checkpoint_ns)
+      text_key(checkpoint_id, binary_utf8_v1)
+    index by_scope (scope, checkpoint_id, thread_id, checkpoint_ns)
+      text_key(checkpoint_id, binary_utf8_v1)
+    delete_policy no_inbound
+  }
+
+  entity CheckpointBlob {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>,
+      blob_key: string<512>
+    )
+    field channel: string<256>
+    field blob_version: string<256>
+    field serde_type: string<64>
+    field payload: bytes<262144>
+    index by_blob_key (scope, thread_id, checkpoint_ns, blob_key)
+    index by_thread (scope, thread_id, checkpoint_ns, checkpoint_id, blob_key)
+    delete_policy no_inbound
+  }
+
+  entity CheckpointWrite {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>,
+      task_id: string<128>,
+      write_idx: i64
+    )
+    field channel: string<256>
+    field serde_type: string<64>
+    field payload: bytes<65536>
+    field task_path: string<512>
+    field initialized: bool
+    index by_checkpoint (
+      scope, thread_id, checkpoint_ns, checkpoint_id, task_id, write_idx
+    )
+    index by_checkpoint_channel (
+      scope, thread_id, checkpoint_ns, checkpoint_id, channel, task_id, write_idx
+    )
+    index by_thread (
+      scope, thread_id, checkpoint_ns, checkpoint_id, task_id, write_idx
+    )
+    delete_policy no_inbound
+  }
+
+  entity CheckpointWriteInput {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>,
+      task_id: string<128>,
+      write_idx: i64
+    )
+    field channel: string<256>
+    field serde_type: string<64>
+    field payload: bytes<65536>
+    field task_path: string<512>
+    field allow_overwrite: bool
+    delete_policy no_inbound
+  }
+
+  entity CheckpointKeyInput {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>
+    )
+    delete_policy no_inbound
+  }
+
+  entity CheckpointBlobKeyInput {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>,
+      blob_key: string<512>
+    )
+    delete_policy no_inbound
+  }
+
+  entity CheckpointWriteKeyInput {
+    key (
+      scope: string<32>,
+      thread_id: string<256>,
+      checkpoint_ns: string<256>,
+      checkpoint_id: string<128>,
+      task_id: string<128>,
+      write_idx: i64
+    )
+    delete_policy no_inbound
+  }
+
+  aggregate Checkpoints {
+    root Checkpoint
+    child CheckpointBlob
+    child CheckpointWrite
+    child CheckpointWriteInput
+    child CheckpointKeyInput
+    child CheckpointBlobKeyInput
+    child CheckpointWriteKeyInput
+    partition_by scope
+    conflict_key (scope, thread_id)
+  }
+
+  command PutCheckpoint {
+    input request_id: string<128>
+    input scope: string<32>
+    input thread_id: string<256>
+    input checkpoint_ns: string<256>
+    input checkpoint_id: string<128>
+    input parent_checkpoint_id: optional<string<128>>
+    input checkpoint_serde_type: string<64>
+    input checkpoint_payload: bytes<262144>
+    input metadata_serde_type: string<64>
+    input metadata_payload: bytes<65536>
+    idempotency_key request_id
+    init_or_mutate Checkpoint(
+      scope, thread_id, checkpoint_ns, checkpoint_id
+    ) as cp initialize {
+      parent_checkpoint_id: parent_checkpoint_id,
+      checkpoint_serde_type: checkpoint_serde_type,
+      checkpoint_payload: checkpoint_payload,
+      metadata_serde_type: metadata_serde_type,
+      metadata_payload: metadata_payload,
+      revision: 0,
+    }
+    overwrite cp.parent_checkpoint_id = parent_checkpoint_id
+    overwrite cp.checkpoint_serde_type = checkpoint_serde_type
+    overwrite cp.checkpoint_payload = checkpoint_payload
+    overwrite cp.metadata_serde_type = metadata_serde_type
+    overwrite cp.metadata_payload = metadata_payload
+    set cp.revision = cp.revision + 1
+    return CheckpointStored { checkpoint: cp }
+  }
+
+  bulk command PutCheckpointWithBlobs {
+    input request_id: string<128>
+    input scope: string<32>
+    input thread_id: string<256>
+    input checkpoint_ns: string<256>
+    input checkpoint_id: string<128>
+    input parent_checkpoint_id: optional<string<128>>
+    input checkpoint_serde_type: string<64>
+    input checkpoint_payload: bytes<262144>
+    input metadata_serde_type: string<64>
+    input metadata_payload: bytes<65536>
+    input blobs: list<CheckpointBlob, 1..128> aggregate_bytes <= 2097152
+    idempotency_key request_id
+    init_or_mutate Checkpoint(
+      scope, thread_id, checkpoint_ns, checkpoint_id
+    ) as cp initialize {
+      parent_checkpoint_id: parent_checkpoint_id,
+      checkpoint_serde_type: checkpoint_serde_type,
+      checkpoint_payload: checkpoint_payload,
+      metadata_serde_type: metadata_serde_type,
+      metadata_payload: metadata_payload,
+      revision: 0,
+    }
+    for blob in blobs {
+      init_or_mutate CheckpointBlob(
+        scope, thread_id, checkpoint_ns, blob.checkpoint_id, blob.blob_key
+      ) as b initialize {
+        channel: blob.channel,
+        blob_version: blob.blob_version,
+        serde_type: blob.serde_type,
+        payload: blob.payload,
+      }
+      overwrite b.channel = blob.channel
+      overwrite b.blob_version = blob.blob_version
+      overwrite b.serde_type = blob.serde_type
+      overwrite b.payload = blob.payload
+    }
+    overwrite cp.parent_checkpoint_id = parent_checkpoint_id
+    overwrite cp.checkpoint_serde_type = checkpoint_serde_type
+    overwrite cp.checkpoint_payload = checkpoint_payload
+    overwrite cp.metadata_serde_type = metadata_serde_type
+    overwrite cp.metadata_payload = metadata_payload
+    set cp.revision = cp.revision + 1
+    return CheckpointStored { checkpoint: cp }
+  }
+
+  bulk command PutCheckpointBlobs {
+    input request_id: string<128>
+    input scope: string<32>
+    input thread_id: string<256>
+    input checkpoint_ns: string<256>
+    input blobs: list<CheckpointBlob, 1..128> aggregate_bytes <= 2097152
+    idempotency_key request_id
+    for blob in blobs {
+      init_or_mutate CheckpointBlob(
+        scope, thread_id, checkpoint_ns, blob.checkpoint_id, blob.blob_key
+      ) as b initialize {
+        channel: blob.channel,
+        blob_version: blob.blob_version,
+        serde_type: blob.serde_type,
+        payload: blob.payload,
+      }
+      overwrite b.channel = blob.channel
+      overwrite b.blob_version = blob.blob_version
+      overwrite b.serde_type = blob.serde_type
+      overwrite b.payload = blob.payload
+    }
+    return BlobsStored {}
+  }
+
+  bulk command PutCheckpointWrites {
+    input request_id: string<128>
+    input scope: string<32>
+    input thread_id: string<256>
+    input checkpoint_ns: string<256>
+    input checkpoint_id: string<128>
+    input writes: list<CheckpointWriteInput, 1..256> aggregate_bytes <= 2097152
+    idempotency_key request_id
+    for item in writes {
+      observe_or_initialize CheckpointWrite(
+        scope, thread_id, checkpoint_ns, checkpoint_id, item.task_id, item.write_idx
+      ) as w initialize {
+        channel: item.channel,
+        serde_type: item.serde_type,
+        payload: item.payload,
+        task_path: item.task_path,
+        initialized: false,
+      }
+      decide w {
+        when w.initialized == false || item.allow_overwrite == true => apply {
+          overwrite w.channel = item.channel
+          overwrite w.serde_type = item.serde_type
+          overwrite w.payload = item.payload
+          overwrite w.task_path = item.task_path
+          overwrite w.initialized = true
+        }
+        else => no_effect
+      }
+    }
+    return WritesStored {}
+  }
+
+  bulk command DeleteCheckpoints {
+    input request_id: string<128>
+    input scope: string<32>
+    input keys: list<CheckpointKeyInput, 1..256>
+    idempotency_key request_id
+    for k in keys {
+      delete Checkpoint(
+        scope, k.thread_id, k.checkpoint_ns, k.checkpoint_id
+      ) as cp else CheckpointMissing {}
+    }
+    return CheckpointsDeleted {}
+  }
+
+  bulk command DeleteCheckpointBlobs {
+    input request_id: string<128>
+    input scope: string<32>
+    input keys: list<CheckpointBlobKeyInput, 1..256>
+    idempotency_key request_id
+    for k in keys {
+      delete CheckpointBlob(
+        scope, k.thread_id, k.checkpoint_ns, k.checkpoint_id, k.blob_key
+      ) as b else BlobMissing {}
+    }
+    return BlobsDeleted {}
+  }
+
+  bulk command DeleteCheckpointWrites {
+    input request_id: string<128>
+    input scope: string<32>
+    input keys: list<CheckpointWriteKeyInput, 1..256>
+    idempotency_key request_id
+    for k in keys {
+      delete CheckpointWrite(
+        scope, k.thread_id, k.checkpoint_ns, k.checkpoint_id, k.task_id, k.write_idx
+      ) as w else WriteMissing {}
+    }
+    return WritesDeleted {}
+  }
+}

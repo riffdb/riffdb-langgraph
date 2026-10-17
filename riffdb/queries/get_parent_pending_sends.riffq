@@ -1,0 +1,28 @@
+query GetParentPendingSends(
+    $scope: CheckpointWrite.scope,
+    $thread_id: CheckpointWrite.thread_id,
+    $checkpoint_ns: CheckpointWrite.checkpoint_ns,
+    $checkpoint_id: CheckpointWrite.checkpoint_id,
+    $channel: CheckpointWrite.channel,
+) {
+    many writes from CheckpointWrite
+        where scope == $scope
+          && thread_id == $thread_id
+          && checkpoint_ns == $checkpoint_ns
+          && checkpoint_id == $checkpoint_id
+          && channel == $channel
+        order by task_id asc, write_idx asc
+        take 48
+
+    return Found {
+        writes: writes {
+            task_id
+            write_idx
+            channel
+            serde_type
+            payload
+            task_path
+        }
+    }
+    outcomes Found
+}
