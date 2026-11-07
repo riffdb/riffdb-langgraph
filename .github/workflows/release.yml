@@ -1,0 +1,187 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to verify (for example v0.2.0)'
+        required: false
+        default: 'v0.2.0'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_INCREMENTAL: '0'
+  CARGO_TARGET_DIR: ${{ github.workspace }}/riffdb/target
+
+jobs:
+  verify-and-build:
+    name: Verify adapter and build Python distributions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      release_tag: ${{ steps.meta.outputs.release_tag }}
+      version: ${{ steps.meta.outputs.version }}
+      revision: ${{ steps.meta.outputs.revision }}
+    steps:
+      - name: Check out adapter
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: adapter
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install Python and uv
+        uses: astral-sh/setup-uv@37802dc9eab1be2badb8abcd4fb0fbd2d9b8bf25 # v5.4.1
+        with:
+          python-version: '3.13'
+      - name: Resolve release metadata
+        id: meta
+        working-directory: adapter
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            release_tag="${GITHUB_REF_NAME}"
+          else
+            release_tag="${{ inputs.release_tag || 'v0.2.0' }}"
+          fi
+          [[ "$release_tag" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]
+          version="${BASH_REMATCH[1]}"
+          python3 - "$version" <<'PY'
+          from pathlib import Path
+          import sys
+          import tomllib
+          expected = sys.argv[1]
+          pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+          assert pyproject["project"]["version"] == expected, pyproject["project"]["version"]
+          init_text = Path("src/riffdb_langgraph/__init__.py").read_text(encoding="utf-8")
+          assert f'__version__ = "{expected}"' in init_text, init_text
+          PY
+          riffdb_rev="$(cat .github/riffdb-revision)"
+          [[ "$riffdb_rev" =~ ^[0-9a-f]{40}$ ]]
+          printf 'release_tag=%s\n' "$release_tag" >>"$GITHUB_OUTPUT"
+          printf 'version=%s\n' "$version" >>"$GITHUB_OUTPUT"
+          printf 'revision=%s\n' "$riffdb_rev" >>"$GITHUB_OUTPUT"
+      - name: Check out RiffDB
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: riffdb/riffdb
+          ref: ${{ steps.meta.outputs.revision }}
+          path: riffdb
+          persist-credentials: false
+      - name: Install Rust toolchain
+        run: rustup toolchain install 1.98.1 --profile minimal
+      - name: Cache Cargo sources
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-release-${{ runner.os }}-${{ hashFiles('riffdb/Cargo.lock') }}
+      - name: Build pinned RiffDB CLI and verify application lock
+        run: |
+          cargo build --locked --release --manifest-path riffdb/Cargo.toml -p riffdb-cli --bin riffdb
+          (cd adapter && ../riffdb/target/release/riffdb application check)
+      - name: Run adapter checks and build wheel and sdist
+        working-directory: adapter
+        run: |
+          uv sync --locked
+          make check
+          mkdir -p "$RUNNER_TEMP/release-out"
+          uv build --out-dir "$RUNNER_TEMP/release-out"
+          (
+            cd "$RUNNER_TEMP/release-out"
+            sha256sum "riffdb_langgraph-${{ steps.meta.outputs.version }}"* >SHA256SUMS
+          )
+      - name: Upload verified release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: riffdb-langgraph-release
+          path: ${{ runner.temp }}/release-out/*
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release and PyPI package
+    needs: [verify-and-build]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out adapter
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Download verified release artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: riffdb-langgraph-release
+          path: release-out
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@c074443f1aee8d4db6bf3b48c6047fb2ceb53f3d # v2.4.0
+        with:
+          subject-path: |
+            release-out/riffdb_langgraph-${{ needs.verify-and-build.outputs.version }}-py3-none-any.whl
+            release-out/riffdb_langgraph-${{ needs.verify-and-build.outputs.version }}.tar.gz
+            release-out/SHA256SUMS
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ needs.verify-and-build.outputs.release_tag }}"
+          version="${{ needs.verify-and-build.outputs.version }}"
+          notes="Compiled RiffDB checkpoint-saver adapter for LangGraph v${version} (pinned to RiffDB \`${{ needs.verify-and-build.outputs.revision }}\` and \`riffdb==${version}\`)."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" release-out/* --clobber
+          else
+            gh release create "$tag" release-out/* \
+              --title "riffdb-langgraph ${tag}" \
+              --notes "$notes" \
+              --verify-tag
+          fi
+      - name: Publish to PyPI (when token or Trusted Publishing is configured)
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          python3 -m pip install --quiet twine
+          if [[ -n "${PYPI_TOKEN:-}" ]]; then
+            python3 -m twine upload --non-interactive --skip-existing -u __token__ -p "$PYPI_TOKEN" release-out/*.whl release-out/*.tar.gz
+          else
+            python3 - <<'PY' || echo "::warning::PyPI Trusted Publishing or PYPI_TOKEN is not yet configured for riffdb-langgraph; GitHub Release wheel and sdist are published."
+          import json
+          import os
+          import subprocess
+          import sys
+          import urllib.request
+
+          req_url = os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"]
+          req_tok = os.environ["ACTIONS_ID_TOKEN_REQUEST_TOKEN"]
+          sep = "&" if "?" in req_url else "?"
+          req = urllib.request.Request(
+              f"{req_url}{sep}audience=pypi",
+              headers={"Authorization": f"Bearer {req_tok}", "Accept": "application/json; api-version=2.0"},
+          )
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              jwt = json.loads(resp.read().decode("utf-8"))["value"]
+          mint = urllib.request.Request(
+              "https://upload.pypi.org/_/oidc/mint-token",
+              data=json.dumps({"token": jwt}).encode("utf-8"),
+              headers={"Content-Type": "application/json", "Accept": "application/json"},
+              method="POST",
+          )
+          with urllib.request.urlopen(mint, timeout=30) as resp:
+              pypi_tok = json.loads(resp.read().decode("utf-8"))["token"]
+          import glob
+          pkgs = sorted(glob.glob("release-out/*.whl") + glob.glob("release-out/*.tar.gz"))
+          subprocess.run(
+              [sys.executable, "-m", "twine", "upload", "--non-interactive", "--skip-existing", "-u", "__token__", "-p", pypi_tok, *pkgs],
+              check=True,
+          )
+          PY
+          fi
