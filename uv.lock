@@ -857,29 +857,29 @@ wheels = [
 
 [[package]]
 name = "riffdb"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "riffdb-application" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4d/34/4c9a4c99b6fedf3a308c5bd36cc4ba9dec62c8df32eac71491386d10c62d/riffdb-0.2.0-py3-none-any.whl", hash = "sha256:1443232916eff5a0f032bf5e287acf600f0419d429030f819c4428326f7b1228", size = 6425, upload-time = "2026-11-07T16:09:59.127Z" },
+    { url = "https://files.pythonhosted.org/packages/08/89/5c7c337e1b55f454e3498fdab46212e4f10c7e5ff87cbb2f87a508cfbb48/riffdb-0.2.1-py3-none-any.whl", hash = "sha256:a1b7b0492dea018374acadd833007ee1bfaf81d48f229d52d65150581ade7bab", size = 6425, upload-time = "2026-11-09T23:24:25.648Z" },
 ]
 
 [[package]]
 name = "riffdb-application"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b5/af/6261acca276f67095a674312433796954bfc56ce4de7e012b8b9c8ded869/riffdb_application-0.2.0.tar.gz", hash = "sha256:da7bd710f578eb71f9ee3229c0f788b39f2414597666b3f132e35878725fc93f", size = 1736146, upload-time = "2026-11-07T16:10:00.205Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4a/45/f245dc36ef80b6a22cda4292290e245f87635965de56b011281228093b21/riffdb_application-0.2.1.tar.gz", hash = "sha256:a6e7bd81d7b53b5cb0565878c083d9f29f17fd1fd2723937747f4259c8822e7f", size = 1747809, upload-time = "2026-11-09T23:24:26.99Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9e/ad/67adfe7bcc7a422f3a70f0f359cce2268a19feb2c6c0d83daf95568f32e7/riffdb_application-0.2.0-cp313-abi3-macosx_11_0_arm64.whl", hash = "sha256:7beae3d8680f6bb087ab83df9cad84e48c4ed15eb4442570c26e58ed7913ea6e", size = 2206744, upload-time = "2026-11-07T16:09:48.374Z" },
-    { url = "https://files.pythonhosted.org/packages/ba/d4/13b44cd791fc891435b92e94488cbc3bfd37f0dd5c95deb956b46af579eb/riffdb_application-0.2.0-cp313-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:a699f6cc88c70b5867ff68b786e329600b46ade43aa8618bd158945a05c69987", size = 2316245, upload-time = "2026-11-07T16:09:51.838Z" },
-    { url = "https://files.pythonhosted.org/packages/49/4e/223c682915c9abefffe8e2c084e3f4766f882842e3cb789c7115a6e6d12a/riffdb_application-0.2.0-cp313-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:a1e36ea11b11d768b04c4abf1f2c171ec6bd56bbd79e7539e15ac78386108637", size = 2415292, upload-time = "2026-11-07T16:09:55.06Z" },
+    { url = "https://files.pythonhosted.org/packages/76/fe/fdf63e41c96d930e8448f72bbec8be2ad8792e876ca1badfae3fecfea9f4/riffdb_application-0.2.1-cp313-abi3-macosx_11_0_arm64.whl", hash = "sha256:79858c1d3da8c72d01f276779c8070c88ac88952f6f705e4aee66616efd91978", size = 2218125, upload-time = "2026-11-09T23:24:12.39Z" },
+    { url = "https://files.pythonhosted.org/packages/df/16/f07b19ffa215933041e38e174c2d4b479524fa879733c73b9f6b92356c17/riffdb_application-0.2.1-cp313-abi3-manylinux_2_28_aarch64.whl", hash = "sha256:99d1ddf28edc9e9d4855be7aee919392286cd90cdfb4350d7b78da3c2b308bcf", size = 2326359, upload-time = "2026-11-09T23:24:17.37Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/e3/5feb5845385cffe96bf6f13361b61366a8916c16bed2657309d84abe6fbe/riffdb_application-0.2.1-cp313-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:30b670d4263785289c676c42f6911695d7626662698cc0badd5246d2979d7054", size = 2425870, upload-time = "2026-11-09T23:24:21.114Z" },
 ]
 
 [[package]]
 name = "riffdb-langgraph"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "langgraph-checkpoint" },
@@ -899,7 +899,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "langgraph-checkpoint", specifier = ">=3.0.0" },
-    { name = "riffdb", specifier = "==0.2.0" },
+    { name = "riffdb", specifier = "==0.2.1" },
 ]
 
 [package.metadata.requires-dev]
