@@ -9,13 +9,13 @@ from langgraph.checkpoint.base import empty_checkpoint
 from langgraph.checkpoint.serde.types import ERROR, INTERRUPT, TASKS
 from langgraph.graph import END, START, StateGraph
 
+from riffdb_langgraph import RiffDBCheckpointSaver
 from riffdb_langgraph.generated.client import (
     Checkpoint,
     CheckpointBlob,
     CheckpointWrite,
 )
 from riffdb_langgraph.saver import (
-    RiffDBCheckpointSaver,
     _chunk_blobs,
     _chunk_writes,
     _make_blob_key,
