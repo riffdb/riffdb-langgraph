@@ -899,7 +899,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "langgraph-checkpoint", specifier = ">=3.0.0" },
-    { name = "riffdb", specifier = "==0.2.1" },
+    { name = "riffdb", specifier = "~=0.2.1" },
 ]
 
 [package.metadata.requires-dev]

@@ -17,7 +17,7 @@ eight capabilities of `langgraph-checkpoint-conformance`:
 | `copy_thread` | `copy_thread`, `acopy_thread` | Cloning all checkpoints, channel blobs, and pending writes across all namespaces from a source `thread_id` to a target `thread_id` |
 | `prune` | `prune`, `aprune` | Pruning checkpoints per `(thread_id, checkpoint_ns)` using `keep_latest` or `delete` strategies |
 
-The Python floor is 3.13, matching the RiffDB Python application runtime.
+The Python floor is 3.11 (`cp311-abi3`), matching the RiffDB Python application runtime.
 
 ## Contract and aggregate model
 

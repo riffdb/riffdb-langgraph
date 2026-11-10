@@ -12,7 +12,7 @@ license = { text = "MIT OR Apache-2.0" }
 authors = [{ name = "RiffDB contributors" }]
 dependencies = [
   "langgraph-checkpoint>=3.0.0",
-  "riffdb==0.2.1",
+  "riffdb~=0.2.1",
 ]
 
 [dependency-groups]
