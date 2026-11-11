@@ -65,6 +65,72 @@
       "watch_queries": [],
       "agent_subscriptions": [],
       "row_policies": []
+    },
+    {
+      "name": "LangGraphCheckpointerStaging",
+      "environment": "staging",
+      "tenant_scope": "global",
+      "queries": [
+        "GetCheckpointBlobs",
+        "GetCheckpointById",
+        "GetLatestCheckpoint",
+        "GetParentPendingSends",
+        "ListCheckpointsByScope",
+        "ListCheckpointsByScopeBefore",
+        "ListCheckpointsByThread",
+        "ListCheckpointsByThreadBefore",
+        "ListCheckpointsByThreadNs",
+        "ListCheckpointsByThreadNsBefore",
+        "ListThreadBlobKeys",
+        "ListThreadCheckpointKeys",
+        "ListThreadWriteKeys"
+      ],
+      "commands": [
+        "DeleteCheckpointBlobs",
+        "DeleteCheckpoints",
+        "DeleteCheckpointWrites",
+        "PutCheckpoint",
+        "PutCheckpointBlobs",
+        "PutCheckpointWithBlobs",
+        "PutCheckpointWrites"
+      ],
+      "event_streams": [],
+      "watch_queries": [],
+      "agent_subscriptions": [],
+      "row_policies": []
+    },
+    {
+      "name": "LangGraphCheckpointerProduction",
+      "environment": "production",
+      "tenant_scope": "global",
+      "queries": [
+        "GetCheckpointBlobs",
+        "GetCheckpointById",
+        "GetLatestCheckpoint",
+        "GetParentPendingSends",
+        "ListCheckpointsByScope",
+        "ListCheckpointsByScopeBefore",
+        "ListCheckpointsByThread",
+        "ListCheckpointsByThreadBefore",
+        "ListCheckpointsByThreadNs",
+        "ListCheckpointsByThreadNsBefore",
+        "ListThreadBlobKeys",
+        "ListThreadCheckpointKeys",
+        "ListThreadWriteKeys"
+      ],
+      "commands": [
+        "DeleteCheckpointBlobs",
+        "DeleteCheckpoints",
+        "DeleteCheckpointWrites",
+        "PutCheckpoint",
+        "PutCheckpointBlobs",
+        "PutCheckpointWithBlobs",
+        "PutCheckpointWrites"
+      ],
+      "event_streams": [],
+      "watch_queries": [],
+      "agent_subscriptions": [],
+      "row_policies": []
     }
   ],
   "seed_inputs": []

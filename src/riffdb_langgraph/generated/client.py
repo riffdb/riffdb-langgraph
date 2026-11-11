@@ -23,7 +23,7 @@ def _compact_tag(value: object, tag: str, keys: frozenset[str]) -> dict[str, obj
 CONTRACT_LINEAGE: Final[str] = "RiffDBLangGraph"
 CONTRACT_VERSION: Final[int] = 1
 CONTRACT_BUNDLE_HASH: Final[str] = "b2da9e908d1987b893189d9d470d553edcf05ec700ac3657860ff858b580bcfe"
-QUERY_MODULE_HASH: Final[str] = "031908018e6cd7507ca0e0f81b8375673f1707c57742af8e964e2b618d185e75"
+QUERY_MODULE_HASH: Final[str] = "c572883fdf7899b0c6e229d63273e0c8431920e918b5c0278f729bc5977c16a9"
 
 COLLECTION_COUNT: Final[str] = "collection_count"
 INDIVIDUAL_VALUE_BYTES: Final[str] = "individual_value_bytes"
@@ -114,7 +114,7 @@ class CheckpointWriteKeyInput:
     checkpoint_id: str
     checkpoint_ns: str
 
-GET_CHECKPOINT_BLOBS_QUERY_PLAN_HASH: Final[str] = "07f6c6bbc62a3e2803fb1069a6a926b28ba92bda98240bf6b94bfc335ffd4f59"
+GET_CHECKPOINT_BLOBS_QUERY_PLAN_HASH: Final[str] = "91fa663cde18975a2097b9307a2666ca3b2bed2327811c3abb2261906e93396c"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GetCheckpointBlobsParams:
@@ -144,7 +144,7 @@ class GetCheckpointBlobsFound:
 
 GetCheckpointBlobsResult: TypeAlias = GetCheckpointBlobsFound
 
-GET_CHECKPOINT_BY_ID_QUERY_PLAN_HASH: Final[str] = "31bc87de97bccf7f775d2cf1859e34d8e61ab10d544da55c54cea331a7b04d2a"
+GET_CHECKPOINT_BY_ID_QUERY_PLAN_HASH: Final[str] = "b338e8ff3b2064dfb618b8cc6442cf37e7c07c80b71a0b449cc7501962cf43af"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GetCheckpointByIdParams:
@@ -188,7 +188,7 @@ class GetCheckpointByIdFound:
 
 GetCheckpointByIdResult: TypeAlias = GetCheckpointByIdFound
 
-GET_LATEST_CHECKPOINT_QUERY_PLAN_HASH: Final[str] = "9c6b85cac6ee4f33af63d8c5e5d71301bdf067daf125e9d2c933bb9b90d9bd8d"
+GET_LATEST_CHECKPOINT_QUERY_PLAN_HASH: Final[str] = "64fd8e9aa85cdd12d95e5643a8636cb40e6618308732dbf172d6bba2b50d5582"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GetLatestCheckpointParams:
@@ -231,7 +231,7 @@ class GetLatestCheckpointFound:
 
 GetLatestCheckpointResult: TypeAlias = GetLatestCheckpointFound
 
-GET_PARENT_PENDING_SENDS_QUERY_PLAN_HASH: Final[str] = "35fb6384617509553b8cae201b06bfdb0861ba04ba0e3133ff78e8bbfe176df8"
+GET_PARENT_PENDING_SENDS_QUERY_PLAN_HASH: Final[str] = "a2add19ad067730e54c3ba10ddd8247242d0210d63c39e1d595f131146fe7e18"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class GetParentPendingSendsParams:
@@ -263,7 +263,7 @@ class GetParentPendingSendsFound:
 
 GetParentPendingSendsResult: TypeAlias = GetParentPendingSendsFound
 
-LIST_CHECKPOINTS_BY_SCOPE_QUERY_PLAN_HASH: Final[str] = "d0ab791498810463e8d8440d74298f9739ccc5833a53e681152bb41b96b534f1"
+LIST_CHECKPOINTS_BY_SCOPE_QUERY_PLAN_HASH: Final[str] = "704096a7fbf73c7825aaed8d275960b86a54492f29a1e662aac3221793c74357"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByScopeParams:
@@ -306,7 +306,7 @@ class ListCheckpointsByScopeFound:
 
 ListCheckpointsByScopeResult: TypeAlias = ListCheckpointsByScopeFound
 
-LIST_CHECKPOINTS_BY_SCOPE_BEFORE_QUERY_PLAN_HASH: Final[str] = "2471225250c7d7efd9892e9a1c02a6d680730ae7208a2c1aa1f8b37cb836623f"
+LIST_CHECKPOINTS_BY_SCOPE_BEFORE_QUERY_PLAN_HASH: Final[str] = "7119a89e72f40a6d7a093ccb0c62c2d71d87f5a803cd300dae4f0f358be5b0ab"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByScopeBeforeParams:
@@ -350,7 +350,7 @@ class ListCheckpointsByScopeBeforeFound:
 
 ListCheckpointsByScopeBeforeResult: TypeAlias = ListCheckpointsByScopeBeforeFound
 
-LIST_CHECKPOINTS_BY_THREAD_QUERY_PLAN_HASH: Final[str] = "55460adafba0978357c4ed4d09b902cb6cf5b3bae07d77b5b92d01fcbfef7241"
+LIST_CHECKPOINTS_BY_THREAD_QUERY_PLAN_HASH: Final[str] = "bb8436445a749c3d938521ad5ae1097c527a3597eaec21ce5bfc55246f88889d"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByThreadParams:
@@ -394,7 +394,7 @@ class ListCheckpointsByThreadFound:
 
 ListCheckpointsByThreadResult: TypeAlias = ListCheckpointsByThreadFound
 
-LIST_CHECKPOINTS_BY_THREAD_BEFORE_QUERY_PLAN_HASH: Final[str] = "c919a35aba9c136f9b755f474c1ddb9c3452c424e651b7bf09046447c4dc7b63"
+LIST_CHECKPOINTS_BY_THREAD_BEFORE_QUERY_PLAN_HASH: Final[str] = "add413a914cec253407bfcc4910151c2e62f9b81b8bc7300ff533890fe096787"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByThreadBeforeParams:
@@ -439,7 +439,7 @@ class ListCheckpointsByThreadBeforeFound:
 
 ListCheckpointsByThreadBeforeResult: TypeAlias = ListCheckpointsByThreadBeforeFound
 
-LIST_CHECKPOINTS_BY_THREAD_NS_QUERY_PLAN_HASH: Final[str] = "af15ab5795ed0fbfbb528004fab823f5181ddfbc895e1f3d03b5c1d28c43cb84"
+LIST_CHECKPOINTS_BY_THREAD_NS_QUERY_PLAN_HASH: Final[str] = "6f56cc9cd863b76b58605bd3b92f0ff170952d9a6d971093efd8c6565e25076b"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByThreadNsParams:
@@ -484,7 +484,7 @@ class ListCheckpointsByThreadNsFound:
 
 ListCheckpointsByThreadNsResult: TypeAlias = ListCheckpointsByThreadNsFound
 
-LIST_CHECKPOINTS_BY_THREAD_NS_BEFORE_QUERY_PLAN_HASH: Final[str] = "be1cc6ca8c8b1e02101cec861078a0a0b78191f0d99a6126cec11375969b3ad1"
+LIST_CHECKPOINTS_BY_THREAD_NS_BEFORE_QUERY_PLAN_HASH: Final[str] = "e578c7393599f9efde1326b8375a9b80a3eb7c13b54d565ade6228f5960ec993"
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ListCheckpointsByThreadNsBeforeParams:

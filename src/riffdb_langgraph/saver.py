@@ -216,15 +216,21 @@ class RiffDBCheckpointSaver(
     def _query_options(self, cursor: str | None = None) -> QueryOptions:
         return QueryOptions(cursor=cursor, read_after_commit=self._last_commit)
 
-    def _resolve_env_connection(self) -> tuple[str, CallMetadata, VerifiedTlsConfig | None]:
+    def _resolve_env_connection(
+        self,
+    ) -> tuple[str, CallMetadata, VerifiedTlsConfig | None, str | None]:
+        driver_socket = os.environ.get("RIFFDB_LANGGRAPH_DRIVER_SOCKET") or os.environ.get(
+            "RIFFDB_DRIVER_SOCKET"
+        )
         endpoint = os.environ.get("RIFFDB_LANGGRAPH_ENDPOINT") or os.environ.get("RIFFDB_ENDPOINT")
         cred_file = os.environ.get("RIFFDB_LANGGRAPH_CREDENTIAL_FILE") or os.environ.get(
             "RIFFDB_CREDENTIAL_FILE"
         )
-        if not endpoint or not cred_file:
+        if not cred_file or (not driver_socket and not endpoint):
             raise RuntimeError(
                 "Missing RiffDB LangGraph connection configuration: set "
-                "RIFFDB_LANGGRAPH_ENDPOINT and RIFFDB_LANGGRAPH_CREDENTIAL_FILE"
+                "RIFFDB_DRIVER_SOCKET (or RIFFDB_LANGGRAPH_ENDPOINT) and "
+                "RIFFDB_LANGGRAPH_CREDENTIAL_FILE"
             )
         if os.environ.get("RIFFDB_TENANT") == "":
             os.environ.pop("RIFFDB_TENANT", None)
@@ -232,6 +238,9 @@ class RiffDBCheckpointSaver(
         metadata = CallMetadata.authenticated(credential).with_database(
             DatabaseAlias(self.database)
         )
+        if driver_socket:
+            return endpoint or "", metadata, None, driver_socket
+        assert endpoint is not None
         trust_root = os.environ.get("RIFFDB_LANGGRAPH_TRUST_ROOT")
         server_name = os.environ.get("RIFFDB_LANGGRAPH_SERVER_NAME")
         if trust_root and server_name:
@@ -243,13 +252,18 @@ class RiffDBCheckpointSaver(
                     trust_root=trust_root,
                     server_name=server_name,
                 ),
+                None,
             )
-        return endpoint, metadata, None
+        return endpoint, metadata, None, None
 
     def _sync_app(self) -> RiffDBLangGraphClient:
         if self._sync_client is None:
-            endpoint, metadata, tls = self._resolve_env_connection()
-            if tls is not None:
+            endpoint, metadata, tls, driver_socket = self._resolve_env_connection()
+            if driver_socket is not None:
+                self._sync_transport = SyncApplicationTransport.connect_driver_socket(
+                    driver_socket, metadata
+                )
+            elif tls is not None:
                 self._sync_transport = SyncApplicationTransport.connect_verified_tls(tls, metadata)
             else:
                 self._sync_transport = SyncApplicationTransport.connect_uri(endpoint, metadata)
@@ -261,8 +275,12 @@ class RiffDBCheckpointSaver(
 
     async def _async_app(self) -> AsyncRiffDBLangGraphClient:
         if self._async_client is None:
-            endpoint, metadata, tls = self._resolve_env_connection()
-            if tls is not None:
+            endpoint, metadata, tls, driver_socket = self._resolve_env_connection()
+            if driver_socket is not None:
+                self._async_transport = await AsyncApplicationTransport.connect_driver_socket(
+                    driver_socket, metadata
+                )
+            elif tls is not None:
                 self._async_transport = await AsyncApplicationTransport.connect_verified_tls(
                     tls, metadata
                 )
