@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "riffdb-langgraph"
-version = "0.2.3"
+version = "0.2.4"
 description = "Compiled RiffDB checkpoint-saver adapter for LangGraph"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,7 +12,7 @@ license = { text = "MIT OR Apache-2.0" }
 authors = [{ name = "RiffDB contributors" }]
 dependencies = [
   "langgraph-checkpoint>=3.0.0",
-  "riffdb~=0.2.3",
+  "riffdb~=0.2.4",
 ]
 
 [dependency-groups]
