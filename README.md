@@ -33,9 +33,11 @@ with RiffDBCheckpointSaver("riffdb://langgraph-development") as checkpointer:
 ```
 
 RiffDB TLS and credential material is supplied through protected environment
-configuration (`RIFFDB_LANGGRAPH_ENDPOINT` and
-`RIFFDB_LANGGRAPH_CREDENTIAL_FILE`) described in [DESIGN.md](DESIGN.md); it is
-never embedded in the checkpointer URI.
+configuration (`RIFFDB_LANGGRAPH_ENDPOINT`,
+`RIFFDB_LANGGRAPH_CREDENTIAL_FILE`, and for direct TLS with a custom trust root,
+both `RIFFDB_LANGGRAPH_TRUST_ROOT` and `RIFFDB_LANGGRAPH_SERVER_NAME`)
+described in [DESIGN.md](DESIGN.md); it is never embedded in the checkpointer
+URI.
 
 ## Development and Verification
 

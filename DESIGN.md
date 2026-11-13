@@ -49,8 +49,9 @@ protected process configuration:
 
 - `RIFFDB_LANGGRAPH_ENDPOINT` (or fallback `RIFFDB_ENDPOINT`)
 - `RIFFDB_LANGGRAPH_CREDENTIAL_FILE` (or fallback `RIFFDB_CREDENTIAL_FILE`)
-- `RIFFDB_LANGGRAPH_TRUST_ROOT` (optional, for verified TLS)
-- `RIFFDB_LANGGRAPH_SERVER_NAME` (optional, for verified TLS)
+- `RIFFDB_LANGGRAPH_TRUST_ROOT` and `RIFFDB_LANGGRAPH_SERVER_NAME` (optional;
+  both must be set together when configuring verified TLS with a custom trust
+  root)
 
 The credential file is loaded via `BearerCredential.from_protected_file`.
 Unknown URI schemes, userinfo, ports, paths, query parameters, and fragments
